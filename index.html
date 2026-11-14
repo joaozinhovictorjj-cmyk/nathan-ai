@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Converse com Nathan AI, uma IA fã de Fictional RJ.">
+  <title>Nathan AI — Fictional RJ</title>
+  <style>
+    :root{color-scheme:dark;--bg:#080b16;--panel:#111a2d;--line:#263858;--blue:#49a5ff;--muted:#a9bad4}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#14264a 0,#080b16 55%);color:#f5f8ff;font:16px Arial,sans-serif;min-height:100vh}
+    header{text-align:center;padding:30px 16px 20px;border-bottom:1px solid #263858;background:#0b1222cc}
+    header h1{margin:0;color:var(--blue);letter-spacing:2px}header p{color:var(--muted);margin:9px 0 0}
+    main{max-width:900px;margin:30px auto;padding:0 16px}.hero,.card{background:linear-gradient(145deg,#14213b,#101729);border:1px solid var(--line);border-radius:20px;padding:26px;margin-bottom:20px;box-shadow:0 15px 40px #0004}
+    .hero{text-align:center;padding:42px 24px}.hero h2{font-size:clamp(27px,5vw,42px);margin:0 0 12px}.hero p,.card p{color:var(--muted);line-height:1.65}
+    .tag{display:inline-block;color:#9ed1ff;background:#17365b;border:1px solid #285787;padding:7px 12px;border-radius:99px;font-size:13px}
+    h2{margin-top:0}.chatbox{height:340px;overflow:auto;background:#080e1b;border:1px solid #263858;border-radius:14px;padding:14px;margin:16px 0}
+    .bubble{max-width:88%;padding:11px 14px;border-radius:14px;margin:9px 0;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+    .bot{background:#172743;border:1px solid #2c4d78}.user{background:#12518a;margin-left:auto}
+    .controls{display:flex;gap:9px}.controls input{min-width:0;flex:1;background:#0b1323;border:1px solid #344968;color:white;border-radius:11px;padding:14px;font-size:15px}
+    button{background:var(--blue);border:0;color:#061426;font-weight:bold;border-radius:11px;padding:0 20px;cursor:pointer}button:disabled{opacity:.55;cursor:wait}
+    .hint{font-size:12px;color:#8498b8;margin-top:10px}footer{text-align:center;color:#7286a5;padding:20px}
+    @media(max-width:520px){.controls{flex-direction:column}.controls button{padding:14px}.hero{padding:30px 18px}}
+  </style>
+</head>
+<body>
+<header><h1>⚡ NATHAN AI</h1><p>Uma IA com espírito gamer e paixão por Fictional RJ</p></header>
+<main>
+  <section class="hero">
+    <span class="tag">ASSISTENTE GAMER</span>
+    <h2>Salve! Eu sou o Nathan AI 😎</h2>
+    <p>Chega mais para trocar ideia sobre jogos, tecnologia e Fictional RJ.</p>
+  </section>
+  <section class="card">
+    <h2>👦 Sobre o Nathan</h2>
+    <p>Nathan é um menino que curte bastante o jogo Fictional RJ. Este site é um projeto de fã; a IA não é oficial nem afiliada ao jogo.</p>
+  </section>
+  <section class="card" id="chat">
+    <h2>🤖 Converse com Nathan AI</h2>
+    <div id="messages" class="chatbox" aria-live="polite">
+      <div class="bubble bot">Nathan AI: E aí! Tudo certo? Manda sua pergunta! 🎮</div>
+    </div>
+    <form id="chatForm" class="controls">
+      <input id="message" maxlength="1500" autocomplete="off" placeholder="Escreva sua mensagem..." aria-label="Sua mensagem" required>
+      <button id="send" type="submit">Enviar</button>
+    </form>
+    <p class="hint">Não envie senhas, dados pessoais ou informações privadas. As respostas são geradas por IA e podem conter erros.</p>
+  </section>
+</main>
+<footer>© 2026 Nathan AI • Projeto independente de fã</footer>
+<script>
+const form=document.querySelector("#chatForm"),input=document.querySelector("#message"),messages=document.querySelector("#messages"),send=document.querySelector("#send");
+const history=[];
+function bubble(text,who){const el=document.createElement("div");el.className="bubble "+who;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;return el;}
+form.addEventListener("submit",async e=>{
+ e.preventDefault();const text=input.value.trim();if(!text||send.disabled)return;
+ bubble("Você: "+text,"user");history.push({role:"user",content:text});input.value="";send.disabled=true;send.textContent="...";
+ const pending=bubble("Nathan AI está pensando...","bot");
+ try{
+  const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history.slice(-12)})});
+  const data=await res.json();if(!res.ok)throw new Error(data.error||"Não foi possível responder agora.");
+  pending.textContent="Nathan AI: "+data.reply;history.push({role:"assistant",content:data.reply});
+ }catch(err){pending.textContent="Nathan AI: "+err.message;}
+ finally{send.disabled=false;send.textContent="Enviar";input.focus();}
+});
+</script>
+</body>
+</html>
